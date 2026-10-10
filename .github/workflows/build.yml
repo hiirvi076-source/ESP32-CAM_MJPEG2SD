@@ -1,0 +1,49 @@
+
+name: Build ESP32-CAM MJPEG2SD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Install ESP32 core
+        run: |
+          arduino-cli core update-index \
+            --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+
+          arduino-cli core install esp32:esp32@3.1.1 \
+            --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+
+      - name: Compile AI-Thinker ESP32-CAM
+        run: |
+          arduino-cli compile \
+            --fqbn "esp32:esp32:esp32:FlashMode=dio,FlashFreq=40,FlashSize=4M,PartitionScheme=min_spiffs,PSRAM=enabled" \
+            --output-dir build \
+            .
+
+      - name: Prepare firmware files
+        run: |
+          mkdir -p release
+
+          cp build/*.bootloader.bin release/bootloader.bin
+          cp build/*.partitions.bin release/partitions.bin
+          cp build/*.boot_app0.bin release/boot_app0.bin
+          cp build/ESP32-CAM_MJPEG2SD.ino.bin release/firmware.bin
+
+          echo "=== FIRMWARE FILES ==="
+          ls -lh release/
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp32cam-mjpeg2sd
+          path: release/
