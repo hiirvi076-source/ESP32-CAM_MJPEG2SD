@@ -30,17 +30,29 @@ jobs:
             --output-dir build \
             .
 
+      
       - name: Prepare firmware files
         run: |
           mkdir -p release
 
+          echo "=== BUILD OUTPUT ==="
+          find build -maxdepth 2 -type f -name "*.bin" -print
+
           cp build/*.bootloader.bin release/bootloader.bin
           cp build/*.partitions.bin release/partitions.bin
-          cp build/*.boot_app0.bin release/boot_app0.bin
-          cp build/ESP32-CAM_MJPEG2SD.ino.bin release/firmware.bin
 
-          echo "=== FIRMWARE FILES ==="
+          FIRMWARE=$(find build -maxdepth 1 -type f -name "*.ino.bin" | head -n 1)
+
+          if [ -z "$FIRMWARE" ]; then
+            echo "ERROR: Main firmware binary not found"
+            exit 1
+          fi
+
+          cp "$FIRMWARE" release/firmware.bin
+
+          echo "=== FILES FOR FLASHING ==="
           ls -lh release/
+
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
