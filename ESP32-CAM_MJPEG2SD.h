@@ -61,11 +61,11 @@
 #define INCLUDE_CERTS false   // setupAssist.cpp (if using app https server)
 #define INCLUDE_UART false    // uart.cpp (use another esp32 as Auxiliary connected via UART)
 #define INCLUDE_TELEM false   // telemetry.cpp (real time data collection). Needs INCLUDE_I2C true
-#define INCLUDE_WEBDAV false  // webDav.cpp (WebDAV protocol)
+#define INCLUDE_WEBDAV true  // webDav.cpp (WebDAV protocol)
 #define INCLUDE_EXTHB false   // externalHeartbeat.cpp (heartbeat to remote server)
 #define INCLUDE_PGRAM false   // photogram.cpp (photogrammetry feature). Needs INCLUDE_PERIPH true
 #define INCLUDE_MCPWM false   // mcpwm.cpp (BDC motor control). Needs INCLUDE_PERIPH true
-#define INCLUDE_RTSP false    // rtsp.cpp (RTSP Streaming). Requires additional library: ESP32-RTSPServer
+#define INCLUDE_RTSP true    // rtsp.cpp (RTSP Streaming). Requires additional library: ESP32-RTSPServer
 #define INCLUDE_DS18B20 false // if true, requires INCLUDE_PERIPH and additional libraries: OneWire and DallasTemperature
 #define INCLUDE_AF false      // for auto focused equipped OV5640. Requires additional library: OV5640_Auto_Focus_for_ESP32_Camera
 #define INCLUDE_NEW_JPG false // true to use esp_new_jpg library, which must be installed first. Faster but uses more memory
