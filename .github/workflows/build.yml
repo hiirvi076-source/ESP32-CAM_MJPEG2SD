@@ -1,4 +1,3 @@
-
 name: Build ESP32-CAM MJPEG2SD
 
 on:
@@ -28,32 +27,53 @@ jobs:
           arduino-cli lib update-index
           arduino-cli lib install "ESP32-RTSPServer"
 
-            - name: Compile AI-Thinker ESP32-CAM
+      - name: Compile AI-Thinker ESP32-CAM
+        id: compile
+        continue-on-error: true
         run: |
+          set -o pipefail
           arduino-cli compile \
             --verbose \
             --fqbn "esp32:esp32:esp32:FlashMode=dio,FlashFreq=40,FlashSize=4M,PartitionScheme=min_spiffs,PSRAM=enabled" \
             --output-dir build \
-            .
+            . 2>&1 | tee compile.log
+
+      - name: Upload compilation log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp32cam-build-log
+          path: compile.log
+          if-no-files-found: ignore
+
+      - name: Stop if compilation failed
+        if: steps.compile.outcome == 'failure'
+        run: |
+          echo "Compilation failed. Download esp32cam-build-log for details."
+          exit 1
 
       - name: Prepare firmware files
         run: |
+          set -e
           mkdir -p release
 
+          echo "=== BUILD OUTPUT ==="
           find build -maxdepth 1 -type f -name "*.bin" -print
 
-          cp build/*.bootloader.bin release/bootloader.bin
-          cp build/*.partitions.bin release/partitions.bin
-
+          BOOTLOADER=$(find build -maxdepth 1 -type f -name "*.bootloader.bin" | head -n 1)
+          PARTITIONS=$(find build -maxdepth 1 -type f -name "*.partitions.bin" | head -n 1)
           FIRMWARE=$(find build -maxdepth 1 -type f -name "*.ino.bin" | head -n 1)
 
-          if [ -z "$FIRMWARE" ]; then
-            echo "ERROR: Main firmware binary not found"
+          if [ -z "$BOOTLOADER" ] || [ -z "$PARTITIONS" ] || [ -z "$FIRMWARE" ]; then
+            echo "ERROR: Required firmware files were not found."
             exit 1
           fi
 
+          cp "$BOOTLOADER" release/bootloader.bin
+          cp "$PARTITIONS" release/partitions.bin
           cp "$FIRMWARE" release/firmware.bin
 
+          echo "=== FILES FOR FLASHING ==="
           ls -lh release/
 
       - name: Upload firmware
