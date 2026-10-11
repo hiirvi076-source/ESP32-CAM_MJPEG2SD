@@ -23,6 +23,11 @@ jobs:
           arduino-cli core install esp32:esp32@3.1.1 \
             --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
 
+      - name: Install RTSP library
+        run: |
+          arduino-cli lib update-index
+          arduino-cli lib install "ESP32-RTSPServer"
+
       - name: Compile AI-Thinker ESP32-CAM
         run: |
           arduino-cli compile \
@@ -30,13 +35,11 @@ jobs:
             --output-dir build \
             .
 
-      
       - name: Prepare firmware files
         run: |
           mkdir -p release
 
-          echo "=== BUILD OUTPUT ==="
-          find build -maxdepth 2 -type f -name "*.bin" -print
+          find build -maxdepth 1 -type f -name "*.bin" -print
 
           cp build/*.bootloader.bin release/bootloader.bin
           cp build/*.partitions.bin release/partitions.bin
@@ -50,12 +53,10 @@ jobs:
 
           cp "$FIRMWARE" release/firmware.bin
 
-          echo "=== FILES FOR FLASHING ==="
           ls -lh release/
-
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: esp32cam-mjpeg2sd
+          name: esp32cam-mjpeg2sd-rtsp-webdav
           path: release/
