@@ -28,9 +28,10 @@ jobs:
           arduino-cli lib update-index
           arduino-cli lib install "ESP32-RTSPServer"
 
-      - name: Compile AI-Thinker ESP32-CAM
+            - name: Compile AI-Thinker ESP32-CAM
         run: |
           arduino-cli compile \
+            --verbose \
             --fqbn "esp32:esp32:esp32:FlashMode=dio,FlashFreq=40,FlashSize=4M,PartitionScheme=min_spiffs,PSRAM=enabled" \
             --output-dir build \
             .
