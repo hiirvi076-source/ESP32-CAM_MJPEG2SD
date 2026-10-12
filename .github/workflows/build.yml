@@ -24,8 +24,13 @@ jobs:
 
       - name: Install RTSP library
         run: |
-          arduino-cli lib update-index
-          arduino-cli lib install "ESP32-RTSPServer"
+          mkdir -p libraries
+          git clone --depth 1 \
+            https://github.com/rjsachse/ESP32-RTSPServer.git \
+            libraries/ESP32-RTSPServer
+
+          echo "=== RTSP LIBRARY FILES ==="
+          find libraries/ESP32-RTSPServer -maxdepth 3 -type f
 
       - name: Compile AI-Thinker ESP32-CAM
         id: compile
@@ -34,6 +39,7 @@ jobs:
           set -o pipefail
           arduino-cli compile \
             --verbose \
+            --libraries libraries \
             --fqbn "esp32:esp32:esp32:FlashMode=dio,FlashFreq=40,FlashSize=4M,PartitionScheme=min_spiffs,PSRAM=enabled" \
             --output-dir build \
             . 2>&1 | tee compile.log
